@@ -20,8 +20,10 @@ class Path
         for($i=1; $i<$n; $i++) {
             $s = trim($dirs[$i]);
             if(empty($s) || $s=='.') continue;
-            if($s=='..' && ((count($results)>0 && !$win) || (count($results)>1 && $win))) {
-                array_pop($results);
+            if($s=='..') {
+                if ((count($results)>0 && !$win) || (count($results)>1 && $win)) {
+                    array_pop($results);
+                }
                 continue;
             }
             $results[] = $s;    
