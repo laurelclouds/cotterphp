@@ -13,16 +13,26 @@ class Path
         if(empty($path)) return '';
         $dirs = explode("/", str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $path));
 
-        $results = [ trim($dirs[0]) ];
-        $win = substr($results[0], -1)==':';
+        $results = [ $dirs[0] ];
 
         $n = count($dirs);
         for($i=1; $i<$n; $i++) {
-            $s = trim($dirs[$i]);
+            $s = $dirs[$i];
             if(empty($s) || $s=='.') continue;
-            if($s=='..' && ((count($results)>0 && !$win) || (count($results)>1 && $win))) {
-                array_pop($results);
-                continue;
+            if($s=='..') {
+                $l = count($results);
+                if($l==1) {
+                    if($results[0]=='') continue;
+                    if($results[0]=='.') {
+                        $results[0] = '..';
+                        continue;
+                    }
+                    if($results[0][strlen($results[0])-1]==':') continue;  // Win根目录
+                }
+                if($l>0 && $results[$l-1]!='..') {
+                    array_pop($results);
+                    continue;
+                }
             }
             $results[] = $s;    
         }
@@ -103,3 +113,4 @@ class Path
         return @\rmdir($path);
     }
 }
+?>

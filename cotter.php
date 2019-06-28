@@ -41,16 +41,6 @@ if( !defined('COTTER_PHP_VERSION') )
         define('COTTER_PHP_PATH', __DIR__);
     }
 
-    if(!defined('COMMON_NAMESPACE_DIR'))
-    {
-        define('COMMON_NAMESPACE_DIR', 'common');
-    }
-
-    if(!defined('COTTER_NAMESPACE_DIR'))
-    {
-        define('COTTER_NAMESPACE_DIR', 'cotter');
-    }
-
     // 默认的Autoloader, PSR-4
     spl_autoload_register(function($class) {
         if($class[0]=="\\") $class = substr($class, 1);
@@ -59,7 +49,6 @@ if( !defined('COTTER_PHP_VERSION') )
         if(DIRECTORY_SEPARATOR!=="\\") $class = str_replace("\\", DIRECTORY_SEPARATOR, $class);
 
         $class .= ".php";
-        $base = COMMON_NAMESPACE_DIR . DIRECTORY_SEPARATOR;
         if($at!==false) {
             /**
              * 命名空间由驼峰式（CamelCase、camelCase）转换为短横线式（kebab-case）
@@ -74,13 +63,9 @@ if( !defined('COTTER_PHP_VERSION') )
                 },
                 substr($class, 0, $at)
             ).substr($class, $at);
-            
-            if(substr($class, 0, strlen(COTTER_NAMESPACE_DIR) + 1)==COTTER_NAMESPACE_DIR.DIRECTORY_SEPARATOR) {
-                $base = '';
-            }
         }
 
-        @include(COTTER_PHP_PATH . DIRECTORY_SEPARATOR . $base . $class);
+        @include(COTTER_PHP_PATH . DIRECTORY_SEPARATOR . $class);
     }, true, false);
 
     // 发现CotterPHP框架时，注册并使用框架的autoloader；单独使用时不会注册CotterPHP架构的autoloader
@@ -89,3 +74,4 @@ if( !defined('COTTER_PHP_VERSION') )
         cotter\CotterPHP::register();
     }
 }
+?>

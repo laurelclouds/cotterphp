@@ -121,3 +121,4 @@ class Config
         return $success!==0 ? $success : false;
     }
 }
+?>
