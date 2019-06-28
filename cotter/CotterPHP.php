@@ -7,7 +7,7 @@ namespace cotter;
 
 class CotterPHP
 {
-    private static function _autoloader($class)
+    public static function import($class)
     {
         if($class[0]=="\\") $class = substr($class, 1);
         $at = strpos($class, "\\");
@@ -25,11 +25,11 @@ class CotterPHP
 
     public static function register()
     {
-        \spl_autoload_register(self::_autoloader, false, true);
+        \spl_autoload_register('self::import', false, true);
     }
 
     public static function unregister()
     {
-        \spl_autoload_unregister(self::_autoloader);
+        \spl_autoload_unregister('self::import');
     }
 }
