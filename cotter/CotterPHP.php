@@ -33,3 +33,4 @@ class CotterPHP
         \spl_autoload_unregister('self::import');
     }
 }
+?>
