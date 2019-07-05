@@ -30,10 +30,11 @@ class Config implements \ArrayAccess
      * @param mixed $defaultValue   -- 配置不存在时的默认值；默认为null
      * @return mixed
      */
-    public static function get($type, $key, $defaultValue=null)
+    private static function _so_get($type, $key, $defaultValue=null)
     {
+        if(is_object($type)) $type = $type->type;
         if(!isset(self::$options[$type])) {
-            self::$options[$type] = self::load($type) ?: array();
+            self::$options[$type] = self::_so_load($type) ?: array();
         }
         
         if(!isset(self::$options[$type][$key])) return $defaultValue;
@@ -48,10 +49,15 @@ class Config implements \ArrayAccess
      * @param mixed $value      -- 配置值
      * @return void
      */
-    public static function set($type, $key, $value)
+    private static function _so_set($type, $key, $value)
     {
         if(!isset(self::$options[$type])) self::$options[$type] = array();
         self::$options[$type][$key] = $value;
+    }
+
+    private static function _so_isset($type, $key)
+    {
+        return isset(self::$options[$type]) && isset(self::$options[$type][$key]);
     }
 
     /**
@@ -60,7 +66,7 @@ class Config implements \ArrayAccess
      * @param string|int $key   -- 配置项
      * @return void
      */
-    public static function unset($type, $key)
+    private static function _so_unset($type, $key)
     {
         if(!isset(self::$options[$type])) return;
         unset(self::$options[$type][$key]);
@@ -71,7 +77,7 @@ class Config implements \ArrayAccess
      * @param string $type
      * @return array|bool
      */
-    public static function load($type)
+    private static function _so_load($type)
     {
         $fn = COTTER_PHP_PATH . DIRECTORY_SEPARATOR .'config'. DIRECTORY_SEPARATOR . $type . '.php';
         if(!is_file($fn)) return false;
@@ -83,7 +89,7 @@ class Config implements \ArrayAccess
      * @param string $name      -- 保存何种配置
      * @return bool             -- 是否保存成功
      */
-    public static function save($name)
+    private static function _so_save($name)
     {
         if(isset(self::$options[$name]) && is_array(self::$options[$name])) {
             $base = COTTER_PHP_PATH . DIRECTORY_SEPARATOR .'config';
@@ -131,36 +137,55 @@ class Config implements \ArrayAccess
 
     public static function __callStatic($name, $arguments)
     {
-        if(!isset(self::$options[$name])) self::load($name);
+        if(!isset(self::$options[$name])) self::_so_load($name);
         $argc = count($arguments);
 
+        // 不带参数调用时，返回Config对象
         if($argc==0) {
-            return self::$options[$name];
+            return new Config($name);
         }
 
-        // 如果是获取某配置
-        $k = $arguments[0];
+        // 带参数时，返回指定关键字的值
         if($argc==1) {
-            return self::get($name, $k, null);
+            return self::_so_get($name, $arguments[0], null);
         }
 
-        // 否则为设置某配置
-        self::set($name, $k, $arguments[1]);
-        return $arguments[1];
+        // 设定默认值后，如果指定关键字的值不存在，将返回为默认值
+        return self::_so_get($name, $arguments[0], $arguments[1]);
     }
 
     public function __call($name, $arguments)
     {
-        if(!function_exists(self::$name)) throw new \BadMethodCallException(__CLASS__."::$name method NOT found.");
-
+        $func = "_so_$name";
+        if(!method_exists(self::class, $func)) throw new \BadMethodCallException(__CLASS__."::$name method NOT found.");
         array_unshift($arguments, $this->type);
-        return call_user_func_array(array("self",$name), $arguments);
+        return call_user_func_array(array("self", $func), $arguments);
     }
 
     public function __invoke($type, $key=null, $defaultValue=null)
     {
         if(\is_null($key)) return new Config($type);
-        return self::get($type, $key, $defaultValue);
+        return self::_so_get($type, $key, $defaultValue);
+    }
+
+    public function __get($name)
+    {
+        return self::_so_get($this->type, $name, null);
+    }
+
+    public function __set($name, $value)
+    {
+        self::_so_set($this->type, $name, $value);
+    }
+
+    public function __isset($name)
+    {
+        return self::_so_isset($this->type, $name);
+    }
+
+    public function __unset($name)
+    {
+        self::_so_unset($this->type, $name);
     }
 
     /**
@@ -170,7 +195,7 @@ class Config implements \ArrayAccess
      */
      public function offsetExists($offset)
      {
-         return isset(self::$options[$this->type]) && isset(self::$options[$this->type][$offset]);
+         return self::_so_isset($this->type, $offset);
      }
 
      /**
@@ -180,7 +205,7 @@ class Config implements \ArrayAccess
       */
      public function offsetGet($offset)
      {
-         return self::get($this->type, $offset, null);
+         return self::_so_get($this->type, $offset, null);
      }
 
      /**
@@ -191,7 +216,7 @@ class Config implements \ArrayAccess
       */
      public function offsetSet($offset, $value)
      {
-         self::set($this->type, $offset, $value);
+         self::_so_set($this->type, $offset, $value);
      }
 
      /**
@@ -201,7 +226,7 @@ class Config implements \ArrayAccess
       */
      public function offsetUnset($offset)
      {
-         self::unset($this->type, $offset);
+         self::_so_unset($this->type, $offset);
      }
 }
 ?>
