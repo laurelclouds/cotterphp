@@ -1,6 +1,8 @@
 <?php
 namespace cotter;
 
+use BadMethodCallException;
+
 class Path
 {
     /**
@@ -112,5 +114,20 @@ class Path
         if($removed===false) return false;
         return @\rmdir($path);
     }
+
+    /**
+     * 增加获取cotter下子目录的绝对路径的办法
+     */
+    public static function __callStatic($name, $arguments)
+    {
+        $dir = COTTER_PHP_PATH . DIRECTORY_SEPARATOR . 'cotter' . DIRECTORY_SEPARATOR . $name;
+
+        if(!is_dir($name)) throw new BadMethodCallException(__CLASS__ . "::$name method NOT found.");
+
+        if(count($arguments)==0 || empty($arguments[0])) return $dir;
+
+        $x = str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $arguments[0]);
+        if($x[0]==DIRECTORY_SEPARATOR) return $dir . $x;
+        return $dir . DIRECTORY_SEPARATOR . $x;
+    }
 }
-?>

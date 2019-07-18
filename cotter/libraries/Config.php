@@ -1,10 +1,11 @@
 <?php
 namespace cotter;
 
+use ArrayAccess;
 /**
  * Config类，实现了ArrayAccess访问接口
  */
-class Config implements \ArrayAccess
+class Config implements ArrayAccess
 {
     /**
      * 配置缓存数组
@@ -30,7 +31,7 @@ class Config implements \ArrayAccess
      * @param mixed $defaultValue   -- 配置不存在时的默认值；默认为null
      * @return mixed
      */
-    private static function _so_get($type, $key, $defaultValue=null)
+    private static function _so_got($type, $key, $defaultValue=null)
     {
         if(is_object($type)) $type = $type->type;
         if(!isset(self::$options[$type])) {
@@ -144,6 +145,20 @@ class Config implements \ArrayAccess
         return false;
     }
 
+    public static function get($type/* , $key, $defaultValue */)
+    {
+        $argc = func_num_args();
+        $args = func_get_args();
+
+        $parts = explode(".", $type, 2);
+        $n = count($parts);
+        if($argc==1 && $n==1) return new Config($type);
+        if($argc==1 && $n!=1) return self::_so_got($parts[0], $parts[1], null);
+
+        if($n==1) return self::_so_got($type, $args[1], $argc==2 ? null : $args[2]);
+        return self::_so_got($parts[0], $parts[1], $args[1]);
+    }
+
     /**
      * 默认静态调用，如无参数，则表示创建该配置类型的配置类，否则，返回指定关键字的值
      */
@@ -159,11 +174,11 @@ class Config implements \ArrayAccess
 
         // 带参数时，返回指定关键字的值
         if($argc==1) {
-            return self::_so_get($type, $arguments[0], null);
+            return self::_so_got($type, $arguments[0], null);
         }
 
         // 设定默认值后，如果指定关键字的值不存在，将返回为默认值
-        return self::_so_get($type, $arguments[0], $arguments[1]);
+        return self::_so_got($type, $arguments[0], $arguments[1]);
     }
 
     /**
@@ -184,20 +199,15 @@ class Config implements \ArrayAccess
      * @param mixed $defaultValue   -- 如果配置项不存在，返回的默认值
      * @return mixed
      */
-    public function __invoke($type, $key=null, $defaultValue=null)
+    public function __invoke(/*$type , $key, $defaultValue */)
     {
-        $parts = explode(".", $type, 2);
-        
-        if(\is_null($key)) {
-            if(count($parts)==1) return new Config($type);
-            $key = $parts[1];
-        }
-        return self::_so_get($parts[0], $key, $defaultValue);
+        $args = func_get_args();
+        return call_user_func_array(array('self', 'get'), $args);
     }
 
     public function __get($name)
     {
-        return self::_so_get($this->type, $name, null);
+        return self::_so_got($this->type, $name, null);
     }
 
     public function __set($name, $value)
@@ -232,7 +242,7 @@ class Config implements \ArrayAccess
       */
      public function offsetGet($offset)
      {
-         return self::_so_get($this->type, $offset, null);
+         return self::_so_got($this->type, $offset, null);
      }
 
      /**
