@@ -48,10 +48,10 @@ if( !defined('COTTER_PHP_VERSION') )
         @include(COTTER_PHP_PATH . DIRECTORY_SEPARATOR . $class . '.php');
     }, true, false);
 
-    // 发现CotterPHP框架时，注册并使用框架的autoloader；单独使用时不会注册CotterPHP架构的autoloader
+    // 发现CotterPHP框架时，初始化CotterPHP框架
     if(is_file(COTTER_PHP_PATH . DIRECTORY_SEPARATOR . 'cotter' . DIRECTORY_SEPARATOR . 'CotterPHP.php'))
     {
-        cotter\CotterPHP::register();
+        cotter\CotterPHP::initialize();
     }
 }
 ?>
