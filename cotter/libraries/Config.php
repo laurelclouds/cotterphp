@@ -33,12 +33,12 @@ class Config implements ArrayAccess
      */
     private static function _so_got($type, $key, $defaultValue=null)
     {
-        if(is_object($type)) $type = $type->type;
-        if(!isset(self::$options[$type])) {
+        if (is_object($type)) $type = $type->type;
+        if (!isset(self::$options[$type])) {
             self::$options[$type] = self::_so_load($type) ?: array();
         }
         
-        if(!isset(self::$options[$type][$key])) return $defaultValue;
+        if (!isset(self::$options[$type][$key])) return $defaultValue;
 
         return self::$options[$type][$key];
     }
@@ -52,8 +52,8 @@ class Config implements ArrayAccess
      */
     private static function _so_set($type, $key, $value)
     {
-        if(is_object($type)) $type = $type->type;
-        if(!isset(self::$options[$type])) self::$options[$type] = array();
+        if (is_object($type)) $type = $type->type;
+        if (!isset(self::$options[$type])) self::$options[$type] = array();
         self::$options[$type][$key] = $value;
     }
 
@@ -65,7 +65,7 @@ class Config implements ArrayAccess
      */
     private static function _so_isset($type, $key)
     {
-        if(is_object($type)) $type = $type->type;
+        if (is_object($type)) $type = $type->type;
         return isset(self::$options[$type]) && isset(self::$options[$type][$key]);
     }
 
@@ -77,8 +77,8 @@ class Config implements ArrayAccess
      */
     private static function _so_unset($type, $key)
     {
-        if(is_object($type)) $type = $type->type;
-        if(!isset(self::$options[$type])) return;
+        if (is_object($type)) $type = $type->type;
+        if (!isset(self::$options[$type])) return;
         unset(self::$options[$type][$key]);
     }
 
@@ -89,8 +89,8 @@ class Config implements ArrayAccess
      */
     private static function _so_load($type)
     {
-        $fn = COTTER_PHP_PATH . DIRECTORY_SEPARATOR .'config'. DIRECTORY_SEPARATOR . $type . '.php';
-        if(!is_file($fn)) return false;
+        $fn = COTTER_PHP_PATH .'config'. DIRECTORY_SEPARATOR . $type . '.php';
+        if (!is_file($fn)) return false;
         return @include $fn;
     }
 
@@ -101,8 +101,8 @@ class Config implements ArrayAccess
      */
     private static function _so_save($type)
     {
-        if(isset(self::$options[$type]) && is_array(self::$options[$type])) {
-            $base = COTTER_PHP_PATH . DIRECTORY_SEPARATOR .'config';
+        if (isset(self::$options[$type]) && is_array(self::$options[$type])) {
+            $base = COTTER_PHP_PATH .'config';
             $filename = $base. DIRECTORY_SEPARATOR . $type . '.php';
             $lines = array(
                 "<?php",
@@ -110,18 +110,18 @@ class Config implements ArrayAccess
             );
 
             $rows = array();
-            foreach(self::$options[$type] as $k => $v) {
-                if(is_null($v)) continue;
+            foreach (self::$options[$type] as $k => $v) {
+                if (is_null($v)) continue;
 
                 $k = str_replace(["\\", "\"", "\$"], ["\\\\", "\\\"", "\\\$"], $k);
 
-                if(is_bool($v)) {
+                if (is_bool($v)) {
                     $v = $v ? 'true' : 'false';
                 }
-                elseif(is_numeric($v)) {
+                elseif (is_numeric($v)) {
                     $v = strval($v);
                 }
-                elseif(is_string($v)) {
+                elseif (is_string($v)) {
                     $v = "\"" . str_replace(["\\", "\"", "\$"], ["\\\\", "\\\"", "\\\$"], $v) . "\"";
                 }
                 else {
@@ -134,7 +134,7 @@ class Config implements ArrayAccess
             $lines[] = ");";
             $lines[] = "?>";
             
-            if(!is_dir($base)) {
+            if (!is_dir($base)) {
                 @mkdir($base, 0777, true);
                 @chmod($base, 0777);
             }
@@ -152,10 +152,10 @@ class Config implements ArrayAccess
 
         $parts = explode(".", $type, 2);
         $n = count($parts);
-        if($argc==1 && $n==1) return new Config($type);
-        if($argc==1 && $n!=1) return self::_so_got($parts[0], $parts[1], null);
+        if ($argc==1 && $n==1) return new Config($type);
+        if ($argc==1 && $n!=1) return self::_so_got($parts[0], $parts[1], null);
 
-        if($n==1) return self::_so_got($type, $args[1], $argc==2 ? null : $args[2]);
+        if ($n==1) return self::_so_got($type, $args[1], $argc==2 ? null : $args[2]);
         return self::_so_got($parts[0], $parts[1], $args[1]);
     }
 
@@ -164,16 +164,16 @@ class Config implements ArrayAccess
      */
     public static function __callStatic($type, $arguments)
     {
-        if(!isset(self::$options[$type])) self::_so_load($type);
+        if (!isset(self::$options[$type])) self::_so_load($type);
         $argc = count($arguments);
 
         // 不带参数调用时，返回Config对象
-        if($argc==0) {
+        if ($argc==0) {
             return new Config($type);
         }
 
         // 带参数时，返回指定关键字的值
-        if($argc==1) {
+        if ($argc==1) {
             return self::_so_got($type, $arguments[0], null);
         }
 
@@ -187,7 +187,7 @@ class Config implements ArrayAccess
     public function __call($type, $arguments)
     {
         $func = "_so_$type";
-        if(!method_exists(self::class, $func)) throw new \BadMethodCallException(__CLASS__."::$type method NOT found.");
+        if (!method_exists(self::class, $func)) throw new \BadMethodCallException(__CLASS__."::$type method NOT found.");
         array_unshift($arguments, $this->type);
         return call_user_func_array(array("self", $func), $arguments);
     }
@@ -266,4 +266,3 @@ class Config implements ArrayAccess
          self::_so_unset($this->type, $offset);
      }
 }
-?>

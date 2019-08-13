@@ -16,11 +16,11 @@ class Language
     public function get($key/* , ...$args */)
     {
         $result = $this->dict[$key];
-        if(empty($result) && $this->id!==Config::get('app.language', 'zh-hans')) {
+        if (empty($result) && $this->id!==Config::get('app.language', 'zh-hans')) {
             $result = (self::$instance)->get($key);
         }
 
-        if(func_num_args()>1) {
+        if (func_num_args()>1) {
             $args = func_get_args();
             array_shift($args);
 
@@ -34,15 +34,15 @@ class Language
     {
         $this->id = $lang;
         $fn = Path::langs("$lang.php");
-        if(is_file($fn)) {
+        if (is_file($fn)) {
             $this->dict = new Dictionary(@include $fn);
         }
         else {
             $this->dict = new Dictionary();
         }
 
-        if(is_null(self::$instance)) {
-            if($lang==Config::get('app.language', 'zh-hans')) {
+        if (is_null(self::$instance)) {
+            if ($lang==Config::get('app.language', 'zh-hans')) {
                 self::$instance = $this;
             }
             else {
@@ -53,7 +53,7 @@ class Language
 
     public function __invoke($key)
     {
-        if(is_null(self::$instance)) {
+        if (is_null(self::$instance)) {
             self::$instance = new Language(Config::get('app.language', 'zh-hans'));
         }
 

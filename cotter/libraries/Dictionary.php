@@ -13,7 +13,7 @@ class Dictionary implements ArrayAccess, JsonSerializable
 
     public function offsetExists($offset)
     {
-        if(!is_string($offset)) {
+        if (!is_string($offset)) {
             trigger_error('Dictonary key should be a string value.', E_USER_WARNING);
         }
 
@@ -22,7 +22,7 @@ class Dictionary implements ArrayAccess, JsonSerializable
 
     public function offsetGet($offset)
     {
-        if(!is_string($offset)) {
+        if (!is_string($offset)) {
             trigger_error('Dictonary key should be a string value.', E_USER_WARNING);
         }
 
@@ -31,7 +31,7 @@ class Dictionary implements ArrayAccess, JsonSerializable
 
     public function offsetSet($offset, $value)
     {
-        if(!is_string($offset)) {
+        if (!is_string($offset)) {
             trigger_error('Dictonary key should be a string value.', E_USER_WARNING);
         }
 
@@ -40,7 +40,7 @@ class Dictionary implements ArrayAccess, JsonSerializable
 
     public function offsetUnset($offset)
     {
-        if(!is_string($offset)) {
+        if (!is_string($offset)) {
             trigger_error('Dictonary key should be a string value.', E_USER_WARNING);
         }
 
@@ -63,7 +63,7 @@ class Dictionary implements ArrayAccess, JsonSerializable
             $name
         );
         $func = "array_$func";
-        if(function_exists($func)) {
+        if (function_exists($func)) {
             array_unshift($arguments, $this->items);
             return \call_user_func_array($func, $arguments);
         }
@@ -73,7 +73,7 @@ class Dictionary implements ArrayAccess, JsonSerializable
 
     public function __get($name)
     {
-        if(property_exists($this->items, $name)) {
+        if (property_exists($this->items, $name)) {
             return $this->items->$name;
         }
 
@@ -82,7 +82,7 @@ class Dictionary implements ArrayAccess, JsonSerializable
 
     public function __set($name, $value)
     {
-        if(property_exists($this->items, $name)) {
+        if (property_exists($this->items, $name)) {
             $this->items->$name = $value;
             return;
         }
@@ -92,13 +92,13 @@ class Dictionary implements ArrayAccess, JsonSerializable
 
     public function __isset($name)
     {
-        if(property_exists($this->items, $name)) return true;
+        if (property_exists($this->items, $name)) return true;
         return isset($this->items[$name]);
     }
 
     public function __unset($name)
     {
-        if(!property_exists($this->items, $name)) {
+        if (!property_exists($this->items, $name)) {
             unset($this->items->$name);
             return;
         }
@@ -108,9 +108,9 @@ class Dictionary implements ArrayAccess, JsonSerializable
 
     public function __construct($arrayLike=null)
     {
-        if(is_null($arrayLike)) return;
-        if(is_object($arrayLike)) $arrayLike = get_object_vars($arrayLike);
-        if(!is_array($arrayLike)) return;
+        if (is_null($arrayLike)) return;
+        if (is_object($arrayLike)) $arrayLike = get_object_vars($arrayLike);
+        if (!is_array($arrayLike)) return;
 
         $this->items = array_merge($this->items, $arrayLike);
     }

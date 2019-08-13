@@ -1,8 +1,6 @@
 <?php
 namespace cotter;
 
-use BadMethodCallException;
-
 class Path
 {
     /**
@@ -12,26 +10,26 @@ class Path
      */
     public static function normalize($path)
     {
-        if(empty($path)) return '';
-        $dirs = explode("/", str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $path));
+        if (empty($path)) return '';
+        $dirs = explode(DIRECTORY_SEPARATOR, str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $path));
 
         $results = [ $dirs[0] ];
 
         $n = count($dirs);
-        for($i=1; $i<$n; $i++) {
+        for ($i=1; $i<$n; $i++) {
             $s = $dirs[$i];
-            if(empty($s) || $s=='.') continue;
-            if($s=='..') {
+            if (empty($s) || $s=='.') continue;
+            if ($s=='..') {
                 $l = count($results);
-                if($l==1) {
-                    if($results[0]=='') continue;
-                    if($results[0]=='.') {
+                if ($l==1) {
+                    if ($results[0]=='') continue;
+                    if ($results[0]=='.') {
                         $results[0] = '..';
                         continue;
                     }
-                    if($results[0][strlen($results[0])-1]==':') continue;  // Win根目录
+                    if ($results[0][strlen($results[0])-1]==':') continue;  // Win根目录
                 }
-                if($l>0 && $results[$l-1]!='..') {
+                if ($l>0 && $results[$l-1]!='..') {
                     array_pop($results);
                     continue;
                 }
@@ -50,23 +48,23 @@ class Path
     public static function join(/*...$args */)
     {
         $n = func_num_args();
-        if($n==0) return '';
+        if ($n==0) return '';
     
         $args = func_get_args();
         $results = [];
-        foreach($args as $arg) {
+        foreach ($args as $arg) {
             $s = '';
-            if(is_array($arg)) {
-                $s = call_user_func_array(static::join, $arg);
+            if (is_array($arg)) {
+                $s = \call_user_func_array(static::join, $arg);
             }
             else {
                 $s = $arg;
             }
     
-            if(!empty($s)) $results[] = $s;
+            if (!empty($s)) $results[] = $s;
         }
     
-        return static::normalize(implode(DIRECTORY_SEPARATOR, $results));
+        return static::normalize(\implode(DIRECTORY_SEPARATOR, $results));
     }
 
     /**
@@ -77,28 +75,28 @@ class Path
      */
     public static function mkdir($path, $mode=0777)
     {
-        if(!@\mkdir($path, $mode, true)) return false;
-        @chmod($path, $mode);
+        if (!@\mkdir($path, $mode, true)) return false;
+        @\chmod($path, $mode);
         return true;
     }
 
     public static function clear($path)
     {
-        if(!is_dir($path)) {
+        if (!is_dir($path)) {
             return false;
         }
 
         $dirs = \scandir($path);
-        foreach($dirs as $dir) {
-            if($dir=='.' || $dir=='..') continue;
+        foreach ($dirs as $dir) {
+            if ($dir=='.' || $dir=='..') continue;
             $t = $path.'/'.$dir;
-            if(is_dir($t)) {
-                if(false===static::rmdir($t, true)) {
+            if (is_dir($t)) {
+                if (false===static::rmdir($t, true)) {
                     return false;
                 }
             }
             else {
-                if(false===@\unlink($t)) {
+                if (false===@\unlink($t)) {
                     return false;
                 }
             }
@@ -108,26 +106,20 @@ class Path
 
     public static function rmdir($path, $force)
     {
-        if(!$force) return @\rmdir($path);
+        if (!$force) return @\rmdir($path);
         
         $removed = static::clear($path);
-        if($removed===false) return false;
+        if ($removed===false) return false;
         return @\rmdir($path);
     }
 
-    /**
-     * 增加获取cotter下子目录的绝对路径的办法
-     */
-    public static function __callStatic($name, $arguments)
+    public static function get($name)
     {
-        $dir = COTTER_PHP_PATH . DIRECTORY_SEPARATOR . 'cotter' . DIRECTORY_SEPARATOR . $name;
+        $name = str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $name);
+        if (strncmp($name, COTTER_PHP_PATH, strlen(COTTER_PHP_PATH))!==0) {
+            return COTTER_PHP_PATH . $name;
+        }
 
-        if(!is_dir($name)) throw new BadMethodCallException(__CLASS__ . "::$name method NOT found.");
-
-        if(count($arguments)==0 || empty($arguments[0])) return $dir;
-
-        $x = str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $arguments[0]);
-        if($x[0]==DIRECTORY_SEPARATOR) return $dir . $x;
-        return $dir . DIRECTORY_SEPARATOR . $x;
+        return $name;
     }
 }

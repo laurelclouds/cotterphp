@@ -8,7 +8,7 @@ namespace cotter;
 if (!defined('COTTERPHP_FRAMEWORK'))
 {
     define('COTTERPHP_FRAMEWORK', __DIR__ . DIRECTORY_SEPARATOR . 'cotter' . DIRECTORY_SEPARATOR . 'CotterPHP.php');
-    define('COTTER_PHP_PATH', __DIR__);         // cotter.php 本文件所在目录
+    define('COTTER_PHP_PATH', __DIR__ . DIRECTORY_SEPARATOR);         // cotter.php 本文件所在目录
 
     define('PHP_VERSION_REQUIRED', '5.4.0');    // 所需PHP最低版本号
 
@@ -46,7 +46,7 @@ if (!defined('COTTERPHP_FRAMEWORK'))
             function ($class) {
                 if ($class[0]=="\\") $class = substr($class, 1);
                 if (DIRECTORY_SEPARATOR!=="\\") $class = str_replace("\\", DIRECTORY_SEPARATOR, $class);
-                @include COTTER_PHP_PATH . DIRECTORY_SEPARATOR . $class . '.php';
+                @include COTTER_PHP_PATH . $class . '.php';
             },
             true,
             false
