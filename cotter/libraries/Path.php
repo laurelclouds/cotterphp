@@ -122,4 +122,41 @@ class Path
 
         return $name;
     }
+
+    public static function camel2Kebab($path)
+    {
+        return lcfirst(\preg_replace_callback(
+            "/.[A-Z]/",
+            function ($matches) {
+                if ($matches[0][0]==DIRECTORY_SEPARATOR) {
+                    return \strtolower($matches[0]);
+                }
+                else {
+                    return $matches[0][0] . "-" . $matches[0][1];
+                }
+            },
+            str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $path)
+        ));
+    }
+
+    public static function kebab2Camel($path, $bigCamel = false)
+    {
+        $path = \preg_replace_callback(
+            "/(?:" . \preg_quote(DIRECTORY_SEPARATOR) . "|\-)[a-z]/",
+            function ($matches) use ($bigCamel) {
+                if ($matches[0][0]==DIRECTORY_SEPARATOR) {
+                    if ($bigCamel) {
+                        return \strtoupper($matches[0]);
+                    }
+
+                    return $matches[0];
+                }
+
+                return \strtoupper($matches[0][1]);
+            },
+            str_replace(["\\", "/"], DIRECTORY_SEPARATOR, $path)
+        );
+
+        return $bigCamel ? ucfirst($path) : lcfirst($path);
+    }
 }
